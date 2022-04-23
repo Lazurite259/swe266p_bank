@@ -18,3 +18,5 @@ or
 python -m falsk run
 ```
 
+# reference & Tutorial
+https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3
