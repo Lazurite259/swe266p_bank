@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block content %}
+    <div class="top">
+            <h1 id="title" class="hidden"><span id="logo">Bank <span>System</span></span></h1>
+        </div>
+        <div class="login-box animated fadeInUp">
+            <div class="box-header">
+                <h2>Sign up</h2>
+            </div>
+            <label for="username">Username</label>
+            <br/>
+            <input type="text" id="username">
+            <br/>
+            <label for="password">Password</label>
+            <br/>
+            <input type="password" id="password">
+            <br/>
+            <button type="submit" onclick="window.location.href='{{ url_for('balance') }}'">Submit</button>
+            <br/>
+        </div>
+{% endblock %}
+
+<!-- templete ref: https://designseer.com/css-html-login-form-templates/ -->
