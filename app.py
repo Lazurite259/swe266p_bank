@@ -1,7 +1,10 @@
-from flask import Flask, request, url_for, redirect, render_template
+from flask import Flask, request, url_for, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
 import re
+
+
+
 
 # set up flask
 app = Flask(__name__)
@@ -15,7 +18,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # I don't know about pool_recycle, so I comment and keep below.
 # app.config['SQLALCHEMY_POOL_RECYCLE'] = 280
-
+# add key
+app.secret_key = 'super secret key'
 
 db = SQLAlchemy(app)
 
@@ -30,6 +34,7 @@ class Accounts(db.Model):
 # ref: https://www.geeksforgeeks.org/md5-hash-python/
     def __init__(self, acc, pas, bal = 777):
         self.accountName = acc
+        #self.password = pas -> can be one of the vunerability??
         self.password = hashlib.md5(pas.encode()).hexdigest()
         self.balance = bal
 
@@ -52,19 +57,39 @@ def index():
 # ref: https://stackoverflow.com/questions/12277933/send-data-from-a-textbox-into-flask?fbclid=IwAR17xLZWQ35XNoxEOZOKwy6g6o5wcOElOQECkTv3o2sG5A-4D0OsKUMUOww
 @app.route('/', methods=['POST'])
 def index_post():
-    return redirect(url_for('balance'))
+    if request.method == 'POST':
+        acc = request.form.get("username")
+        password = request.form.get("password")
+        # verified accounts
+        account = Accounts.query.filter_by(accountName=acc).first()
+        if account and account.password ==hashlib.md5(password.encode()).hexdigest() :
+            #print("username and password match!")
+            session['username'] = account.accountName
+            session['balance'] = account.balance
+            return redirect(url_for('balance'))
+        else:
+            #print("not match!")
+            flash("incorrect username or password!")
+    return redirect(url_for('index'))
 
 
 ### web page - Balance ###
 #ref: https://stackoverflow.com/questions/27539309/how-do-i-create-a-link-to-another-html-page
+
 @app.route('/balance', methods=['GET', 'POST'])
 def balance():
-    if request.method == 'POST':
-        # do stuff when the form is submitted
-
-        # redirect to end the POST handling
-        # the redirect can be to the same route or somewhere else
-        return redirect(url_for('index'))
+    if request.method == 'GET':
+        balance = session['balance']
+        print(balance)
+        # here use the balance to withdraw or deposit
+        # 
+        # 
+        #       
+    #if request.method == 'POST':
+    #     # do stuff when the form is submitted
+    #     # redirect to end the POST handling
+    #     # the redirect can be to the same route or somewhere else
+    #     return redirect(url_for('index'))
 
     # show the form, it wasn't submitted
     return render_template('balance.html')

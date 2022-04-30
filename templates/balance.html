@@ -4,17 +4,18 @@
 
 
 {% block content %}
+
     <div class="top">
             <h1 id="title" class="hidden"><span id="logo">Bank <span>System</span></span></h1>
         </div>
         <div class="login-box animated fadeInUp">
             <div class="box-header">
-                <h2>Welcome, Username</h2>
+                <h2>Welcome {{session['username']}}!</h2>
             </div>
             <div>
             <label for="username">Balance amount:</label>
             <br/>
-            <font style="font-size: 21px;">100</font>
+            <font style="font-size: 21px;">{{session['balance']}}</font>
             </div>
             <br/>
             <label for="withdraw">withdraw</label>
@@ -32,4 +33,6 @@
             <br/>
             <button type="submit">Submit</button>
         </div>
+
+
 {% endblock %}
