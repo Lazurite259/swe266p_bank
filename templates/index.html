@@ -35,15 +35,18 @@
             <div class="box-header">
                 <h2>Log In</h2>
             </div>
-            <label for="username">Username</label>
+            <label for="username">AccountID</label>
             <br/>
-            <input type="text" id="username">
-            <br/>
-            <label for="password">Password</label>
-            <br/>
-            <input type="password" id="password">
-            <br/>
-            <button type="submit" onclick="window.location.href='{{ url_for('balance') }}'">Sign In</button>
+            <form method="POST">
+                <input type="text" id="username" name="username">
+                <br/>
+                <label for="password">Password</label>
+                <br/>
+                <input type="password" id="password" name="password">
+                <br/>
+<!--                <button type="submit" onclick="window.location.href='{{ url_for('balance') }}'">Sign In</button>-->
+                <button type="submit" >Sign In</button>
+            </form>
             <br/>
             <a href="{{ url_for('signup') }}"><p class="small">SIGN UP</p></a>
         </div>
