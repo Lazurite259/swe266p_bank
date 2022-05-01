@@ -4,8 +4,6 @@ import hashlib
 import re
 
 
-
-
 # set up flask
 app = Flask(__name__)
 
@@ -13,7 +11,7 @@ app = Flask(__name__)
 ### Database setting###
 
 # set up database
-app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # I don't know about pool_recycle, so I comment and keep below.
@@ -24,29 +22,49 @@ app.secret_key = 'super secret key'
 db = SQLAlchemy(app)
 
 # For the table of Accounts
-class Accounts(db.Model):
+
+
+class Account(db.Model):
     __tablename__ = 'accounts'
-    accountName = db.Column(db.String(128), unique = True, nullable=False, primary_key = True) # 1 ~ 127 characters long.
-    password = db.Column(db.String, nullable=False ) #To be HASHED  # string max char: 255; text max char: 30,000
+    # 1 ~ 127 characters long.
+    accountName = db.Column(db.String(128), unique=True,
+                            nullable=False, primary_key=True)
+    # To be HASHED  # string max char: 255; text max char: 30,000
+    password = db.Column(db.String, nullable=False)
     # Remember check for the input requirement of "balance"
     balance = db.Column(db.Float)
 
 # ref: https://www.geeksforgeeks.org/md5-hash-python/
-    def __init__(self, acc, pas, bal = 777):
+    def __init__(self, acc, pas, bal=0.00):
         self.accountName = acc
-        #self.password = pas -> can be one of the vunerability??
+        # self.password = pas -> can be one of the vunerability??
         self.password = hashlib.md5(pas.encode()).hexdigest()
         self.balance = bal
+
+    def withdraw(self, amount):
+        if self.balance - amount < 0.00:
+            return False
+        else:
+            self.balance -= amount
+            return True
+
+    def deposit(self, amount):
+        if amount + self.balance > 4294967295.99:
+            return False
+        else:
+            self.balance += amount
+            return True
+
 
 db.create_all()
 
 ### Add new record ###
-### account = Accounts( parameter )
-### db.session.add(account)
-### db.session.commit()
+# account = Accounts( parameter )
+# db.session.add(account)
+# db.session.commit()
 
 ### Query ###
-### newAcc = Accounts.query.filter_by(accountName = acc).first()
+# newAcc = Accounts.query.filter_by(accountName = acc).first()
 
 
 ### web page - Index ###
@@ -55,70 +73,110 @@ def index():
     return render_template('index.html')
 
 # ref: https://stackoverflow.com/questions/12277933/send-data-from-a-textbox-into-flask?fbclid=IwAR17xLZWQ35XNoxEOZOKwy6g6o5wcOElOQECkTv3o2sG5A-4D0OsKUMUOww
+# ref: https://flask.palletsprojects.com/en/2.1.x/patterns/flashing/
+
+
 @app.route('/', methods=['POST'])
 def index_post():
     if request.method == 'POST':
-        acc = request.form.get("username")
+        acc = request.form.get("account")
         password = request.form.get("password")
         # verified accounts
-        account = Accounts.query.filter_by(accountName=acc).first()
-        if account and account.password ==hashlib.md5(password.encode()).hexdigest() :
-            #print("username and password match!")
-            session['username'] = account.accountName
+        account = Account.query.filter_by(accountName=acc).first()
+        if account and account.password == hashlib.md5(password.encode()).hexdigest():
+            # print("username and password match!")
+            session['account'] = account.accountName
             session['balance'] = account.balance
             return redirect(url_for('balance'))
         else:
-            #print("not match!")
-            flash("incorrect username or password!")
+            # print("not match!")
+            flash("Incorrect account name or password!")
     return redirect(url_for('index'))
 
 
 ### web page - Balance ###
-#ref: https://stackoverflow.com/questions/27539309/how-do-i-create-a-link-to-another-html-page
+# ref: https://stackoverflow.com/questions/27539309/how-do-i-create-a-link-to-another-html-page
 
 @app.route('/balance', methods=['GET', 'POST'])
 def balance():
     if request.method == 'GET':
         balance = session['balance']
-        print(balance)
-        # here use the balance to withdraw or deposit
-        # 
-        # 
-        #       
-    #if request.method == 'POST':
-    #     # do stuff when the form is submitted
-    #     # redirect to end the POST handling
-    #     # the redirect can be to the same route or somewhere else
-    #     return redirect(url_for('index'))
+        # print(acc, balance)
+    if request.method == 'POST':
+        # ref: https://stackoverflow.com/questions/43811779/use-many-submit-buttons-in-the-same-form
+
+        acc = session['account']
+        balance = session['balance']
+        print(acc, balance)
+        account = Account.query.filter_by(accountName=acc).first()
+        # should match /(0|[1-9][0-9]*)/
+        pattern = re.compile("^(0|[1-9][0-9]*)")
+        # withdraw
+        if request.form['action'] == "Withdraw":
+            amount = request.form['withdraw']
+            # decimal number is always two digits
+            if amount[::-1].find('.') > 2:
+                flash("Invalid amount")
+                return redirect(url_for('balance'))
+            if re.match(pattern, amount):
+                # update db
+                if account.withdraw(float(amount)):
+                    db.session.commit()
+                else:
+                    flash("Withdraw failed")
+            else:
+                flash("Invalid amount")
+        # deposit
+        elif request.form['action'] == "Deposit":
+            amount = request.form['deposit']
+            # decimal number is always two digits
+            if amount[::-1].find('.') > 2:
+                flash("Invalid amount")
+                return redirect(url_for('balance'))
+            if re.match(pattern, amount):
+                # update db
+                if account.deposit(float(amount)):
+                    db.session.commit()
+                else:
+                    flash("Deposit failed")
+            else:
+                flash("Invalid amount")
+        # update balance
+        session['balance'] = account.balance
+        return redirect(url_for('balance'))
 
     # show the form, it wasn't submitted
     return render_template('balance.html')
 
+
 ### web page - Signup ###
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     message1 = "Account name and password only contain:"
-    message2 = "lowercase letters, digits"
+    message2 = "lowercase letters, digits, "
     message3 = "under-scores, hyphens and dots"
     if request.method == 'POST':
-        acc = request.form['accountName_signup']
+        acc = request.form['account_signup']
         pas = request.form['password_signup']
-        pattern = re.compile("^[_\\-\\.a-z0-9]*$") # should match /[_\\-\\.0-9a-z]/
-        if (len(acc) > 0) & (len(pas) > 0 ) :
-            if bool(re.match(pattern, acc)) & bool(re.match(pattern, pas)) :
+        # should match /[_\\-\\.0-9a-z]/
+        pattern = re.compile("^[_\\-\\.a-z0-9]*$")
+        if (len(acc) > 0) & (len(pas) > 0):
+            if bool(re.match(pattern, acc)) & bool(re.match(pattern, pas)):
                 # ref: https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
-                existingAcc = Accounts.query.get(acc)
+                existingAcc = Account.query.get(acc)
                 if existingAcc is None:
-                    account = Accounts(acc, pas)
+                    account = Account(acc, pas)
                     db.session.add(account)
                     db.session.commit()
-                    newAcc = Accounts.query.filter_by(accountName = acc).first()
+                    newAcc = Account.query.filter_by(accountName=acc).first()
                     if newAcc is None:
                         message1 = "Fail"
                         message2 = "Please sign up again"
                         message3 = ""
                     else:
-                        message1 = "Sign up Successfully"
+                        message1 = "Sign up successfully"
                         message2 = ""
                         message3 = ""
                 else:
@@ -133,4 +191,4 @@ def signup():
             message1 = "Fail"
             message2 = "The length of account name and password"
             message3 = "should between 1 to 127"
-    return render_template('signup.html', message1 = message1, message2 = message2, message3 = message3)
+    return render_template('signup.html', message1=message1, message2=message2, message3=message3)

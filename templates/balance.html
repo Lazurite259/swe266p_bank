@@ -10,28 +10,42 @@
         </div>
         <div class="login-box animated fadeInUp">
             <div class="box-header">
-                <h2>Welcome {{session['username']}}!</h2>
+                <h2>Welcome {{session['account']}}!</h2>
             </div>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <ul class=flashes style="list-style-type:none">
+                {% for message in messages %}
+                    <li style="color:Tomato;">{{ message }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
             <div>
-            <label for="username">Balance amount:</label>
-            <br/>
-            <font style="font-size: 21px;">{{session['balance']}}</font>
+                <label for="account">Balance amount:</label>
+                <br/>
+                <font style="font-size: 21px;">{{session['balance']}}</font>
             </div>
             <br/>
             <label for="withdraw">withdraw</label>
             <br/>
-            <div>
-            <input type="password" id="withdraw">
-            <br>
-            <button type="submit">Submit</button>
-            </div>
+            <form method="POST">
+                <input type="float" id="withdraw" name="withdraw">
+                <br>
+                <button type="submit" name="action" value="Withdraw">Submit</button>
+            </form>
             <br/>
             <br/>
             <label for="deposit">Deposit</label>
             <br/>
-            <input type="password" id="deposit">
-            <br/>
-            <button type="submit">Submit</button>
+            <form method="POST">
+                <input type="float" id="deposit" name="deposit">
+                <br/>
+                <button type="submit" name="action" value="Deposit">Submit</button>
+            </form>
+            <!--<a href="{{ url_for('index') }}"><p class="small">Transaction History</p></a>-->
+            <!--a problem is that the account is not really logged out-->
+            <a href="{{ url_for('index') }}"><p class="small">LOG OUT</p></a>
         </div>
 
 
