@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, request, url_for, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
@@ -27,8 +28,8 @@ db = SQLAlchemy(app)
 class Account(db.Model):
     __tablename__ = 'accounts'
     # 1 ~ 127 characters long.
-    accountName = db.Column(db.String(128), unique=True,
-                            nullable=False, primary_key=True)
+    account_id = db.Column(db.String(128), unique=True,
+                           nullable=False, primary_key=True)
     # To be HASHED  # string max char: 255; text max char: 30,000
     password = db.Column(db.String, nullable=False)
     # Remember check for the input requirement of "balance"
@@ -36,7 +37,7 @@ class Account(db.Model):
 
 # ref: https://www.geeksforgeeks.org/md5-hash-python/
     def __init__(self, acc, pas, bal=0.00):
-        self.accountName = acc
+        self.account_id = acc
         # self.password = pas -> can be one of the vunerability??
         self.password = hashlib.md5(pas.encode()).hexdigest()
         self.balance = bal
@@ -54,6 +55,25 @@ class Account(db.Model):
         else:
             self.balance += amount
             return True
+
+# For the table of Transactions
+
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    transaction_type = db.Column(db.Text)
+    amount = db.Column(db.Float)
+    account_id = db.Column(db.Integer, db.ForeignKey(
+        'accounts'), nullable=False)
+    account = db.relationship(
+        'Account', backref=db.backref('transactions', lazy=True))
+
+    def __init__(self, transaction_type, account_id, amount=0):
+        self.transaction_type = transaction_type
+        self.account_id = account_id
+        self.amount = amount
 
 
 db.create_all()
@@ -82,76 +102,87 @@ def index_post():
         acc = request.form.get("account")
         password = request.form.get("password")
         # verified accounts
-        account = Account.query.filter_by(accountName=acc).first()
+        account = Account.query.filter_by(account_id=acc).first()
         if account and account.password == hashlib.md5(password.encode()).hexdigest():
             # print("username and password match!")
-            session['account'] = account.accountName
-            session['balance'] = account.balance
-            return redirect(url_for('balance'))
+            session['account'] = account.account_id
+            session['balance'] = '%.2f' % account.balance
+            return redirect(url_for('myaccount'))
         else:
             # print("not match!")
             flash("Incorrect account name or password!")
     return redirect(url_for('index'))
 
 
-### web page - Balance ###
+### web page - MyAccount ###
 # ref: https://stackoverflow.com/questions/27539309/how-do-i-create-a-link-to-another-html-page
 
-@app.route('/balance', methods=['GET', 'POST'])
-def balance():
+@app.route('/myaccount', methods=['GET', 'POST'])
+def myaccount():
     if request.method == 'GET':
-        balance = session['balance']
+        acc = session['account']
+        balance = float(session['balance'])
         # print(acc, balance)
+        transactions = Transaction.query.filter_by(
+            account_id=acc).order_by(Transaction.date.desc())
+
     if request.method == 'POST':
         # ref: https://stackoverflow.com/questions/43811779/use-many-submit-buttons-in-the-same-form
 
         acc = session['account']
-        balance = session['balance']
+        balance = float(session['balance'])
         print(acc, balance)
-        account = Account.query.filter_by(accountName=acc).first()
+        account = Account.query.filter_by(account_id=acc).first()
         # should match /(0|[1-9][0-9]*)/
         pattern = re.compile("^(0|[1-9][0-9]*)")
+        action = request.form['action']
         # withdraw
-        if request.form['action'] == "Withdraw":
+        if action == "Withdraw":
             amount = request.form['withdraw']
             # decimal number is always two digits
             if amount[::-1].find('.') > 2:
                 flash("Invalid amount")
-                return redirect(url_for('balance'))
+                return redirect(url_for('myaccount'))
             if re.match(pattern, amount):
                 # update db
                 if account.withdraw(float(amount)):
+                    # add new transaction history
+                    new_transaction = Transaction(action, acc, float(amount))
+                    db.session.add(new_transaction)
+                    # update db
                     db.session.commit()
                 else:
                     flash("Withdraw failed")
             else:
                 flash("Invalid amount")
         # deposit
-        elif request.form['action'] == "Deposit":
+        elif action == "Deposit":
             amount = request.form['deposit']
             # decimal number is always two digits
             if amount[::-1].find('.') > 2:
                 flash("Invalid amount")
-                return redirect(url_for('balance'))
+                return redirect(url_for('myaccount'))
             if re.match(pattern, amount):
                 # update db
                 if account.deposit(float(amount)):
+                    # add new transaction history
+                    new_transaction = Transaction(action, acc, float(amount))
+                    db.session.add(new_transaction)
+                    # update db
                     db.session.commit()
                 else:
                     flash("Deposit failed")
             else:
                 flash("Invalid amount")
         # update balance
-        session['balance'] = account.balance
-        return redirect(url_for('balance'))
+        session['balance'] = '%.2f' % account.balance
+        return redirect(url_for('myaccount'))
 
     # show the form, it wasn't submitted
-    return render_template('balance.html')
+    return render_template('myaccount.html', transactions=transactions)
 
 
 ### web page - Signup ###
-
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     message1 = "Account name and password only contain:"
@@ -170,7 +201,7 @@ def signup():
                     account = Account(acc, pas)
                     db.session.add(account)
                     db.session.commit()
-                    newAcc = Account.query.filter_by(accountName=acc).first()
+                    newAcc = Account.query.filter_by(account_id=acc).first()
                     if newAcc is None:
                         message1 = "Fail"
                         message2 = "Please sign up again"
