@@ -35,10 +35,10 @@
             <div class="box-header">
                 <h2>Log In</h2>
             </div>
-            <label for="username">AccountID</label>
+            <label for="account">Account ID</label>
             <br/>
             <form method="POST">
-                <input type="text" id="username" name="username">
+                <input type="text" id="account" name="account">
                 <br/>
                 <label for="password">Password</label>
                 <br/>
@@ -50,9 +50,9 @@
             <br/>
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                <ul class=flashes>
+                <ul class=flashes style="list-style-type:none">
                 {% for message in messages %}
-                    <div style="color:Tomato;">{{ message }}</div>
+                    <li style="color:Tomato;">{{ message }}</li>
                 {% endfor %}
                 </ul>
                 {% endif %}
