@@ -3,32 +3,32 @@
 
 {% block content %}
     <div class="top">
-            <h1 id="title" class="hidden"><span id="logo">Bank <span>System</span></span></h1>
+        <h1 id="title" class="hidden"><span id="logo">Bank <span>System</span></span></h1>
+    </div>
+    <div class="login-box animated fadeInUp">
+        <div class="box-header">
+            <h2>Sign up</h2>
         </div>
-        <div class="login-box animated fadeInUp">
-            <div class="box-header">
-                <h2>Sign up</h2>
-            </div>
-            <form method="POST">
-                <label for="account_signup">Account Name</label>
-                <br/>
-                <input type="text" id="account_signup" name="account_signup">
-                <br/>
-                <label for="password_signup">Password</label>
-                <br/>
-                <input type="password" id="password_signup" name="password_signup">
-                <br/>
-                <button type="submit" >Submit</button>
-                <br/>
-                <br/>
-            </form>
-            <button onclick="window.location.href='{{ url_for('index') }}'">Go Back To Sign in</button>
-            <div>
-                <p>{{ message1 }}</p>
-                <p>{{ message2 }}</p>
-                <p>{{ message3 }}</p>
-            </div>
+        <form method="POST">
+            <label for="account_signup">Account Name</label>
+            <br/>
+            <input type="text" id="account_signup" name="account_signup">
+            <br/>
+            <label for="password_signup">Password</label>
+            <br/>
+            <input type="password" id="password_signup" name="password_signup">
+            <br/>
+            <button type="submit" >Submit</button>
+            <br/>
+            <br/>
+        </form>
+        <button onclick="window.location.href='{{ url_for('index') }}'">Go Back To Sign in</button>
+        <div>
+            <p>{{ message1 }}</p>
+            <p>{{ message2 }}</p>
+            <p>{{ message3 }}</p>
         </div>
+    </div>
 {% endblock %}
 
 <!-- templete ref: https://designseer.com/css-html-login-form-templates/ -->
