@@ -44,12 +44,22 @@
                 <br/>
                 <input type="password" id="password" name="password">
                 <br/>
-<!--                <button type="submit" onclick="window.location.href='{{ url_for('balance') }}'">Sign In</button>-->
+               <!-- <button type="submit" onclick="window.location.href='{{ url_for('balance') }}'">Sign In</button> -->
                 <button type="submit" >Sign In</button>
             </form>
             <br/>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <ul class=flashes>
+                {% for message in messages %}
+                    <div style="color:Tomato;">{{ message }}</div>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
             <a href="{{ url_for('signup') }}"><p class="small">SIGN UP</p></a>
         </div>
 {% endblock %}
 
 <!-- templete ref: https://designseer.com/css-html-login-form-templates/ -->
+<!--https://stackoverflow.com/questions/44569040/change-color-of-flask-flash-messages-->
