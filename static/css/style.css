@@ -14,7 +14,7 @@ h1#title {
     font-weight: 300;
     font-size: 3.2em;
     color: white;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
     margin: 0 auto;
     padding-top: 180px;
     max-width: 300px;
@@ -34,6 +34,15 @@ h2 {
     letter-spacing: 1px;
     font-size: 1.4em;
     line-height: 2.8em;
+}
+
+h3 {
+    text-transform: uppercase;
+    color: white;
+    font-weight: 400;
+    letter-spacing: 1px;
+    font-size: 1em;
+    line-height: 2em;
 }
 
 a {
@@ -60,10 +69,14 @@ p.small {
     margin: 0;
     padding: 0;
     width: 100%;
-    background: -moz-linear-gradient(top,  rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(top,  rgba(0,0,0,0.6) 0%,rgba(0,0,0,0) 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom,  rgba(0,0,0,0.6) 0%,rgba(0,0,0,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#99000000', endColorstr='#00000000',GradientType=0 ); /* IE6-9 */
+    background: -moz-linear-gradient(top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#99000000', endColorstr='#00000000', GradientType=0);
+    /* IE6-9 */
 }
 
 .login-box {
@@ -74,7 +87,7 @@ p.small {
     top: 80px;
     padding-bottom: 30px;
     border-radius: 5px;
-    box-shadow: 0 5px 50px rgba(0,0,0,0.4);
+    box-shadow: 0 5px 50px rgba(0, 0, 0, 0.4);
     text-align: center;
 }
 
@@ -120,7 +133,7 @@ p.small {
     font-size: 0.7em;
     letter-spacing: 1px;
     background-color: #665851;
-    cursor:pointer;
+    cursor: pointer;
     outline: none;
 }
 
@@ -135,17 +148,55 @@ p.small {
 }
 
 .selected {
-    color: #665851!important;
+    color: #665851 !important;
     transition: 0.5s;
+}
+
+.history-box {
+    background: white;
+    margin: 0 auto;
+    width: 60%;
+    position: relative;
+    top: 100px;
+    padding-bottom: 30px;
+    border-radius: 5px;
+    box-shadow: 0 5px 50px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+.history-box .box-header {
+    background-color: #665851;
+    margin-top: 0;
+    border-radius: 5px 5px 0 0;
+}
+
+.table {
+    margin-left: auto;
+    margin-right: auto;
+    font-family: Arial,
+        Helvetica,
+        sans-serif;
+    border-collapse: collapse;
+    width: 90%;
+    text-align: left;
+}
+
+.table tr:nth-child(even) {
+    background-color: #f2f2f2c2;
+}
+
+.table td,
+.table th {
+    padding: 8px;
 }
 
 /* Animation Delay */
 #logo {
-  -webkit-animation-duration: 1s;
-  -webkit-animation-delay: 2s;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-delay: 2s;
 }
 
 .login-box {
-  -webkit-animation-duration: 1s;
-  -webkit-animation-delay: 1s;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-delay: 1s;
 }
