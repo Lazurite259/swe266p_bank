@@ -12,11 +12,9 @@ app = Flask(__name__)
 ### Database setting###
 
 # set up database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bank.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# I don't know about pool_recycle, so I comment and keep below.
-# app.config['SQLALCHEMY_POOL_RECYCLE'] = 280
 # add key
 app.secret_key = 'super secret key'
 
@@ -30,15 +28,12 @@ class Account(db.Model):
     # 1 ~ 127 characters long.
     account_id = db.Column(db.String(128), unique=True,
                            nullable=False, primary_key=True)
-    # To be HASHED  # string max char: 255; text max char: 30,000
     password = db.Column(db.String, nullable=False)
-    # Remember check for the input requirement of "balance"
     balance = db.Column(db.Float)
 
 # ref: https://www.geeksforgeeks.org/md5-hash-python/
     def __init__(self, acc, pas, bal=0.00):
         self.account_id = acc
-        # self.password = pas -> can be one of the vunerability??
         self.password = hashlib.md5(pas.encode()).hexdigest()
         self.balance = bal
 
@@ -78,14 +73,6 @@ class Transaction(db.Model):
 
 db.create_all()
 
-### Add new record ###
-# account = Accounts( parameter )
-# db.session.add(account)
-# db.session.commit()
-
-### Query ###
-# newAcc = Accounts.query.filter_by(accountName = acc).first()
-
 
 ### web page - Index ###
 @app.route('/')
@@ -104,12 +91,10 @@ def index_post():
         # verified accounts
         account = Account.query.filter_by(account_id=acc).first()
         if account and account.password == hashlib.md5(password.encode()).hexdigest():
-            # print("username and password match!")
             session['account'] = account.account_id
             session['balance'] = '%.2f' % account.balance
             return redirect(url_for('myaccount'))
         else:
-            # print("not match!")
             flash("Incorrect account name or password!")
     return redirect(url_for('index'))
 
@@ -121,8 +106,6 @@ def index_post():
 def myaccount():
     if request.method == 'GET':
         acc = session['account']
-        balance = float(session['balance'])
-        # print(acc, balance)
         transactions = Transaction.query.filter_by(
             account_id=acc).order_by(Transaction.date.desc())
 
@@ -130,8 +113,6 @@ def myaccount():
         # ref: https://stackoverflow.com/questions/43811779/use-many-submit-buttons-in-the-same-form
 
         acc = session['account']
-        balance = float(session['balance'])
-        print(acc, balance)
         account = Account.query.filter_by(account_id=acc).first()
         # should match /(0|[1-9][0-9]*)/
         pattern = re.compile("^(0|[1-9][0-9]*)")
@@ -144,7 +125,7 @@ def myaccount():
                 flash("Invalid amount")
                 return redirect(url_for('myaccount'))
             if re.match(pattern, amount):
-                # update db
+                # withdraw through db
                 if account.withdraw(float(amount)):
                     # add new transaction history
                     new_transaction = Transaction(action, acc, float(amount))
@@ -163,7 +144,7 @@ def myaccount():
                 flash("Invalid amount")
                 return redirect(url_for('myaccount'))
             if re.match(pattern, amount):
-                # update db
+                # deposit through db
                 if account.deposit(float(amount)):
                     # add new transaction history
                     new_transaction = Transaction(action, acc, float(amount))
@@ -178,7 +159,6 @@ def myaccount():
         session['balance'] = '%.2f' % account.balance
         return redirect(url_for('myaccount'))
 
-    # show the form, it wasn't submitted
     return render_template('myaccount.html', transactions=transactions)
 
 
@@ -216,7 +196,7 @@ def signup():
                     message3 = "Please sign up for another one"
             else:
                 message1 = "Fail"
-                message2 = "Account name and password only contain:"
+                message2 = "Account name and password only contains:"
                 message3 = "a-z0-9._-"
         else:
             message1 = "Fail"
