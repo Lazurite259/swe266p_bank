@@ -93,11 +93,12 @@ def index_post():
         print(sqlcommand)
         record = db.session.execute(sqlcommand)
         result = (record.first())
+        print(result)
         account = Account.query.filter_by(account_id=acc).first()
         if result:
             # print("username and password match!")
             session['account'] = acc
-            session['balance'] = 0
+            session['balance'] = account.balance if account else 0
             return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")
