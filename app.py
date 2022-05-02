@@ -88,11 +88,16 @@ def index_post():
     if request.method == 'POST':
         acc = request.form.get("account")
         password = request.form.get("password")
-        # verified accounts
+
+        sqlcommand = "SELECT * FROM accounts where account_id = '" +acc+ "' and password = '" + hashlib.md5(password.encode()).hexdigest() +"'"
+        print(sqlcommand)
+        record = db.session.execute(sqlcommand)
+        result = (record.first())
         account = Account.query.filter_by(account_id=acc).first()
-        if account and account.password == hashlib.md5(password.encode()).hexdigest():
-            session['account'] = account.account_id
-            session['balance'] = '%.2f' % account.balance
+        if result:
+            # print("username and password match!")
+            session['account'] = acc
+            session['balance'] = 0
             return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")
