@@ -89,19 +89,24 @@ def index_post():
         acc = request.form.get("account")
         password = request.form.get("password")
 
-        sqlcommand = "SELECT * FROM accounts where account_id = '" + acc + \
-            "' and password = '" + \
-            hashlib.md5(password.encode()).hexdigest() + "'"
-        record = db.session.execute(sqlcommand)
-        account = (record.first())
-
-        if account:
-            session['account'] = acc
-            session['password'] = password
-            session['balance'] = '%.2f' % account.balance if account else 0
-            return redirect(url_for('myaccount'))
+        sqlcommand_account = "SELECT * FROM accounts where account_id = '" + acc + "'"
+        record_account = db.session.execute(sqlcommand_account)
+        account_name = (record_account.first())
+        if account_name:
+            sqlcommand_password = "SELECT * FROM accounts where account_id = '" + acc + \
+                "' and password = '" + \
+                hashlib.md5(password.encode()).hexdigest() + "'"
+            record = db.session.execute(sqlcommand_password)
+            account = (record.first())
+            if account:
+                session['account'] = acc
+                session['balance'] = '%.2f' % account.balance if account else 0
+                return redirect(url_for('myaccount'))
+            else:
+                flash("Incorrect password")
+    #             flash("Incorrect account name or password!")
         else:
-            flash("Incorrect account name or password!")
+            flash("Account name doesn't exist")
     return redirect(url_for('index'))
 
 
