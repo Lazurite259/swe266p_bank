@@ -97,6 +97,7 @@ def index_post():
 
         if account:
             session['account'] = acc
+            session['password'] = password
             session['balance'] = '%.2f' % account.balance if account else 0
             return redirect(url_for('myaccount'))
         else:
