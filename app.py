@@ -45,7 +45,7 @@ class Account(db.Model):
             return True
 
     def deposit(self, amount):
-        if amount + self.balance > 4294967295.99:
+        if self.balance + amount > 4294967295.99:
             return False
         else:
             self.balance += amount
@@ -89,16 +89,15 @@ def index_post():
         acc = request.form.get("account")
         password = request.form.get("password")
 
-        sqlcommand = "SELECT * FROM accounts where account_id = '" +acc+ "' and password = '" + hashlib.md5(password.encode()).hexdigest() +"'"
-        print(sqlcommand)
+        sqlcommand = "SELECT * FROM accounts where account_id = '" + acc + \
+            "' and password = '" + \
+            hashlib.md5(password.encode()).hexdigest() + "'"
         record = db.session.execute(sqlcommand)
-        result = (record.first())
-        print(result)
-        account = Account.query.filter_by(account_id=acc).first()
-        if result:
-            # print("username and password match!")
+        account = (record.first())
+
+        if account:
             session['account'] = acc
-            session['balance'] = account.balance if account else 0
+            session['balance'] = '%.2f' % account.balance if account else 0
             return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")

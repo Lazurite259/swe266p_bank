@@ -3,7 +3,6 @@
 ## Setup
 
 
-
 ### Install flask
 ```
 pip install flask
@@ -11,12 +10,11 @@ pip install flask
 
 ### Set environment
 Use command line in the directory "swe266p_bank"
-- For Mac
+- For Mac/Linux
 ```
 export FLASK_APP=app
 export FLASK_ENV=development
 ```
-
 - For Windows
 ```
 setx FLASK_APP app
@@ -33,7 +31,7 @@ python -m flask run
 ```
 
 ## Open the website
-Open the web browser, go to `http://127.0.0.1:5000`
+Open the web browser, go to http://127.0.0.1:5000
 
 
 ## Reference & Tutorial
