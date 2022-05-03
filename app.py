@@ -125,7 +125,7 @@ def myaccount():
         # withdraw
         if action == "Withdraw":
             amount = request.form['withdraw']
-            # decimal number is always two digits
+#             decimal number is always two digits
             if amount[::-1].find('.') > 2:
                 flash("Invalid amount")
                 return redirect(url_for('myaccount'))
