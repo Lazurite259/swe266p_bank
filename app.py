@@ -32,10 +32,9 @@ class Account(db.Model):
     password = db.Column(db.String, nullable=False)
     balance = db.Column(db.Float)
 
-# ref: https://www.geeksforgeeks.org/md5-hash-python/
     def __init__(self, acc, pas, bal=0.00):
         self.account_id = acc
-        self.password = hashlib.md5(pas.encode()).hexdigest()
+        self.password = hashlib.sha256(pas.encode()).hexdigest()
         self.balance = bal
 
     def withdraw(self, amount):
