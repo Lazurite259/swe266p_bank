@@ -3,6 +3,7 @@ from flask import Flask, request, url_for, redirect, render_template, session, f
 from flask_sqlalchemy import SQLAlchemy
 import hashlib
 import re
+import hashlib
 
 
 # set up flask
@@ -95,7 +96,7 @@ def index_post():
         if account_name:
             sqlcommand_password = "SELECT * FROM accounts where account_id = '" + acc + \
                 "' and password = '" + \
-                hashlib.md5(password.encode()).hexdigest() + "'"
+                hashlib.sha256(password.encode()).hexdigest() + "'"
             record = db.session.execute(sqlcommand_password)
             account = (record.first())
             if account:
