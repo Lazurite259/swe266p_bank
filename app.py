@@ -105,7 +105,6 @@ def index_post():
                 return redirect(url_for('myaccount'))
             else:
                 flash("Incorrect account name or password!")
-    #             flash("Incorrect account name or password!")
         else:
             flash("Incorrect account name or password!")
     return redirect(url_for('index'))
@@ -185,7 +184,7 @@ def signup():
         pas = request.form['password_signup']
         # should match /[_\\-\\.0-9a-z]/
         pattern = re.compile("^[_\\-\\.a-z0-9]*$")
-        if (len(acc) > 0) & (len(pas) > 0) & (len(acc) < 128) & (len(pas) < 128) :
+        if (len(acc) > 0) & (len(pas) > 0) & (len(acc) < 128) & (len(pas) < 128):
             if bool(re.match(pattern, acc)) & bool(re.match(pattern, pas)):
                 # ref: https://flask-sqlalchemy.palletsprojects.com/en/2.x/queries/
                 existingAcc = Account.query.get(acc)
@@ -215,3 +214,10 @@ def signup():
             message2 = "The length of account name and password"
             message3 = "should between 1 to 127"
     return render_template('signup.html', message1=message1, message2=message2, message3=message3)
+
+
+### Logout ###
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
