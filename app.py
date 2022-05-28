@@ -21,6 +21,8 @@ app.secret_key = 'super secret key'
 
 db = SQLAlchemy(app)
 
+global login_status
+login_status = False
 # For the table of Accounts
 
 
@@ -94,11 +96,13 @@ def index_post():
     if request.method == 'POST':
         acc = request.form.get("account")
         password = request.form.get("password")
-
+        
         user = Account.query.filter_by(account_id=acc).first()
         if user and user.verify_password(password):
             session['account'] = acc
             session['balance'] = '%.2f' % user.balance if user else 0
+            global login_status
+            login_status = True
             return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")
@@ -110,62 +114,66 @@ def index_post():
 
 @app.route('/myaccount', methods=['GET', 'POST'])
 def myaccount():
-    if request.method == 'GET':
-        acc = session['account']
-        transactions = Transaction.query.filter_by(
-            account_id=acc).order_by(Transaction.date.desc())
+    global login_status
+    if login_status:
+        if request.method == 'GET':
+            acc = session['account']
+            transactions = Transaction.query.filter_by(
+                account_id=acc).order_by(Transaction.date.desc())
 
-    if request.method == 'POST':
-        # ref: https://stackoverflow.com/questions/43811779/use-many-submit-buttons-in-the-same-form
+        if request.method == 'POST':
+            # ref: https://stackoverflow.com/questions/43811779/use-many-submit-buttons-in-the-same-form
 
-        acc = session['account']
-        account = Account.query.filter_by(account_id=acc).first()
-        # should match /(0|[1-9][0-9]*)/
-        pattern = re.compile("^(0|[1-9][0-9]*)")
-        action = request.form['action']
-        # withdraw
-        if action == "Withdraw":
-            amount = request.form['withdraw']
-#             decimal number is always two digits
-            if amount[::-1].find('.') > 2:
-                flash("Invalid amount")
-                return redirect(url_for('myaccount'))
-            if re.match(pattern, amount):
-                # withdraw through db
-                if account.withdraw(float(amount)):
-                    # add new transaction history
-                    new_transaction = Transaction(action, acc, float(amount))
-                    db.session.add(new_transaction)
-                    # update db
-                    db.session.commit()
+            acc = session['account']
+            account = Account.query.filter_by(account_id=acc).first()
+            # should match /(0|[1-9][0-9]*)/
+            pattern = re.compile("^(0|[1-9][0-9]*)")
+            action = request.form['action']
+            # withdraw
+            if action == "Withdraw":
+                amount = request.form['withdraw']
+    #             decimal number is always two digits
+                if amount[::-1].find('.') > 2:
+                    flash("Invalid amount")
+                    return redirect(url_for('myaccount'))
+                if re.match(pattern, amount):
+                    # withdraw through db
+                    if account.withdraw(float(amount)):
+                        # add new transaction history
+                        new_transaction = Transaction(action, acc, float(amount))
+                        db.session.add(new_transaction)
+                        # update db
+                        db.session.commit()
+                    else:
+                        flash("Withdraw failed")
                 else:
-                    flash("Withdraw failed")
-            else:
-                flash("Invalid amount")
-        # deposit
-        elif action == "Deposit":
-            amount = request.form['deposit']
-            # decimal number is always two digits
-            if amount[::-1].find('.') > 2:
-                flash("Invalid amount")
-                return redirect(url_for('myaccount'))
-            if re.match(pattern, amount):
-                # deposit through db
-                if account.deposit(float(amount)):
-                    # add new transaction history
-                    new_transaction = Transaction(action, acc, float(amount))
-                    db.session.add(new_transaction)
-                    # update db
-                    db.session.commit()
+                    flash("Invalid amount")
+            # deposit
+            elif action == "Deposit":
+                amount = request.form['deposit']
+                # decimal number is always two digits
+                if amount[::-1].find('.') > 2:
+                    flash("Invalid amount")
+                    return redirect(url_for('myaccount'))
+                if re.match(pattern, amount):
+                    # deposit through db
+                    if account.deposit(float(amount)):
+                        # add new transaction history
+                        new_transaction = Transaction(action, acc, float(amount))
+                        db.session.add(new_transaction)
+                        # update db
+                        db.session.commit()
+                    else:
+                        flash("Deposit failed")
                 else:
-                    flash("Deposit failed")
-            else:
-                flash("Invalid amount")
-        # update balance
-        session['balance'] = '%.2f' % account.balance
-        return redirect(url_for('myaccount'))
+                    flash("Invalid amount")
+            # update balance
+            session['balance'] = '%.2f' % account.balance
+            return redirect(url_for('myaccount'))
 
-    return render_template('myaccount.html', transactions=transactions)
+        return render_template('myaccount.html', transactions=transactions)
+    else:
+        return redirect(url_for('index'))
 
 
 ### web page - Signup ###
@@ -215,4 +223,6 @@ def signup():
 @app.route('/logout')
 def logout():
     session.clear()
+    global login_status
+    login_status = False
     return redirect(url_for('index'))
