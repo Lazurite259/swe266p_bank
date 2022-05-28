@@ -11,3 +11,6 @@
 
 #Ignore python compile files
 *.pyc
+
+#Ignore IntelliJ idea folder
+/.idea
