@@ -51,6 +51,12 @@ class Account(db.Model):
             self.balance += amount
             return True
 
+    def verify_password(self, pas):
+        if hashlib.sha256(pas.encode()).hexdigest() == self.password:
+            return True
+        else:
+            return False
+
 # For the table of Transactions
 
 
@@ -89,21 +95,11 @@ def index_post():
         acc = request.form.get("account")
         password = request.form.get("password")
 
-        sqlcommand_account = "SELECT * FROM accounts where account_id = '" + acc + "'"
-        record_account = db.session.execute(sqlcommand_account)
-        account_name = (record_account.first())
-        if account_name:
-            sqlcommand_password = "SELECT * FROM accounts where account_id = '" + acc + \
-                "' and password = '" + \
-                hashlib.sha256(password.encode()).hexdigest() + "'"
-            record = db.session.execute(sqlcommand_password)
-            account = (record.first())
-            if account:
-                session['account'] = acc
-                session['balance'] = '%.2f' % account.balance if account else 0
-                return redirect(url_for('myaccount'))
-            else:
-                flash("Incorrect account name or password!")
+        user = Account.query.filter_by(account_id=acc).first()
+        if user and user.verify_password(password):
+            session['account'] = acc
+            session['balance'] = '%.2f' % user.balance if user else 0
+            return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")
     return redirect(url_for('index'))
