@@ -103,10 +103,10 @@ def index_post():
                 session['balance'] = '%.2f' % account.balance if account else 0
                 return redirect(url_for('myaccount'))
             else:
-                flash("Incorrect password")
+                flash("Incorrect account name or password!")
     #             flash("Incorrect account name or password!")
         else:
-            flash("Account name doesn't exist")
+            flash("Incorrect account name or password!")
     return redirect(url_for('index'))
 
 
