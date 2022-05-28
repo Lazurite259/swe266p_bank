@@ -214,3 +214,10 @@ def signup():
             message2 = "The length of account name and password"
             message3 = "should between 1 to 127"
     return render_template('signup.html', message1=message1, message2=message2, message3=message3)
+
+
+### Logout ###
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
