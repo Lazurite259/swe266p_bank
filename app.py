@@ -99,7 +99,7 @@ def index_post():
     if request.method == 'POST':
         acc = request.form.get("account")
         password = request.form.get("password")
-        
+
         user = Account.query.filter_by(account_id=acc).first()
         if user and user.verify_password(password):
             session['account'] = acc
@@ -143,7 +143,8 @@ def myaccount():
                     # withdraw through db
                     if account.withdraw(float(amount)):
                         # add new transaction history
-                        new_transaction = Transaction(action, acc, float(amount))
+                        new_transaction = Transaction(
+                            action, acc, float(amount))
                         db.session.add(new_transaction)
                         # update db
                         db.session.commit()
@@ -162,7 +163,8 @@ def myaccount():
                     # deposit through db
                     if account.deposit(float(amount)):
                         # add new transaction history
-                        new_transaction = Transaction(action, acc, float(amount))
+                        new_transaction = Transaction(
+                            action, acc, float(amount))
                         db.session.add(new_transaction)
                         # update db
                         db.session.commit()
@@ -176,6 +178,7 @@ def myaccount():
 
         return render_template('myaccount.html', transactions=transactions)
     else:
+        session.clear()
         return redirect(url_for('index'))
 
 
