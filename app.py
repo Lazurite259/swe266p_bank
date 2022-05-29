@@ -87,6 +87,7 @@ db.create_all()
 def index():
     global login_status
     login_status = ""
+    session.clear()
     return render_template('index.html')
 
 # ref: https://stackoverflow.com/questions/12277933/send-data-from-a-textbox-into-flask?fbclid=IwAR17xLZWQ35XNoxEOZOKwy6g6o5wcOElOQECkTv3o2sG5A-4D0OsKUMUOww
@@ -95,7 +96,6 @@ def index():
 
 @app.route('/', methods=['POST'])
 def index_post():
-
     if request.method == 'POST':
         acc = request.form.get("account")
         password = request.form.get("password")
@@ -178,7 +178,6 @@ def myaccount():
 
         return render_template('myaccount.html', transactions=transactions)
     else:
-        session.clear()
         return redirect(url_for('index'))
 
 
