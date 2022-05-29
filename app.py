@@ -22,7 +22,7 @@ app.secret_key = 'super secret key'
 db = SQLAlchemy(app)
 
 global login_status
-login_status = False
+login_status = ""
 # For the table of Accounts
 
 
@@ -85,6 +85,8 @@ db.create_all()
 ### web page - Index ###
 @app.route('/')
 def index():
+    global login_status
+    login_status = ""
     return render_template('index.html')
 
 # ref: https://stackoverflow.com/questions/12277933/send-data-from-a-textbox-into-flask?fbclid=IwAR17xLZWQ35XNoxEOZOKwy6g6o5wcOElOQECkTv3o2sG5A-4D0OsKUMUOww
@@ -93,6 +95,7 @@ def index():
 
 @app.route('/', methods=['POST'])
 def index_post():
+
     if request.method == 'POST':
         acc = request.form.get("account")
         password = request.form.get("password")
@@ -102,7 +105,7 @@ def index_post():
             session['account'] = acc
             session['balance'] = '%.2f' % user.balance if user else 0
             global login_status
-            login_status = True
+            login_status = acc
             return redirect(url_for('myaccount'))
         else:
             flash("Incorrect account name or password!")
@@ -115,7 +118,7 @@ def index_post():
 @app.route('/myaccount', methods=['GET', 'POST'])
 def myaccount():
     global login_status
-    if login_status:
+    if login_status != "" and login_status == session['account']:
         if request.method == 'GET':
             acc = session['account']
             transactions = Transaction.query.filter_by(
@@ -224,5 +227,5 @@ def signup():
 def logout():
     session.clear()
     global login_status
-    login_status = False
+    login_status = ""
     return redirect(url_for('index'))
